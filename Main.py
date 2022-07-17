@@ -1,5 +1,6 @@
 from enum import unique
 import requests
+import lyricsgenius as lg
 
 def getAccessToken():
     auth_url = 'https://accounts.spotify.com/api/token'
@@ -45,24 +46,43 @@ def getUserSongs(playID):
     songURL = baseURL + endpoint
     response = requests.get(songURL, headers = headers)
 
-    songs = []
+    #songs = response.json().get('items')[0].get('track').get('artists')[0].get('name')
+    songs = {}
 
     for i in range(len(response.json().get('items'))):
-        songs.append(response.json().get('items')[i].get('track').get('name'))
+        songs[response.json().get('items')[i].get('track').get('name')] = response.json().get('items')[i].get('track').get('artists')[0].get('name')
 
     return songs
 
 # x = requests.get('https://api.spotify.com/v1/users/lq752or3h753l1eym1llu4v14/playlists')
 # print(getAccessToken())
 
-def get:
-    "ySL_3VVusXDXnSmVH5U4wNq2hE9dQWVXrA6rVwuwSAFHMDXFVYbUActeERV_zpBZ"
+def getLyrics(songName, artist):
+    clientID = "ySL_3VVusXDXnSmVH5U4wNq2hE9dQWVXrA6rVwuwSAFHMDXFVYbUActeERV_zpBZ"
+    clientSecret = "jSYJSwghDhXJjSJK__J1WrB5oDiygSq-A2MV7zdzxCgJF0y6NAfOd7U3mzzMZzo1YL2pGePy38VX8Y-IpTQGcg"
+    accessToken = "MfBYPfqp3wpQwOe9_Tdgt-7XSbpA2sm_fhIYRCV93SskIVrw_8ipWUUYBHWYqepk"
 
-    "jSYJSwghDhXJjSJK__J1WrB5oDiygSq-A2MV7zdzxCgJF0y6NAfOd7U3mzzMZzo1YL2pGePy38VX8Y-IpTQGcg"
+    genius = lg.Genius(accessToken)
+    song = genius.search_song(songName, artist)
+
+    # genius = lg.Genius(accessToken, skip_non_songs=True, excluded_terms=["(Remix)", "(Live)"], remove_section_headers=True)
+    # songs = (genius.search_artist(song, max_songs=3, sort='popularity')).songs
+    # lyric = [song.lyrics for song in songs]
+    # print("hellos")
+    #return type(song)
+    if song is None:
+        return -1
+    else:
+        return song.lyrics
 
 if __name__ == "__main__":
     userID = "lq752or3h753l1eym1llu4v14"
-    playlists = getUserPlaylists(userID)
+    #playlists = getUserPlaylists(userID)
     songs = list(map(getUserSongs, getUserPlaylists(userID)))
+    lyrics = []
+    for i in songs:
+        lyrics.append(list(map(getLyrics, i.keys(), i.values())))
+    # print(getLyrics("Tooh","Vishal-Shekhar"))
+    # print(getLyrics("Hello","Adele"))
     #uniqueSongs = set(songs)
-    print(songs)
+    print(lyrics)
